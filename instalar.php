@@ -103,8 +103,7 @@ try {
             ['Manicure clásica',  'Limpieza, corte y esmaltado tradicional',           25000],
             ['Pedicure spa',      'Exfoliación, hidratación y esmaltado de pies',      35000],
             ['Uñas acrílicas',    'Extensión de uñas en acrílico con diseño incluido', 60000],
-            ['Semipermanente',    'Esmaltado de larga duración con lámpara UV',        45000],
-            ['Nail art diseño',   'Diseño artístico personalizado por uña',            15000],
+            ['Semipermanente',    'Esmaltado de larga duración con lámpara UV',        40000],
             ['Retiro acrílico',   'Retiro seguro de uñas acrílicas o gel',             20000],
         ];
         foreach ($servicios as $s) {

@@ -1,94 +1,112 @@
 <?php
 require_once __DIR__ . '/../config/database.php';
 
-/**
- * Modelo para la tabla `reserva`
- * Columnas: id_reserva, fecha, hora, estado, id_cliente, id_servicio, id_empleados
- */
-class Reserva {
-
-    private PDO $db;
+class Reserva
+{
+    private $db;
 
     public function __construct()
     {
         $this->db = Database::conectar();
-    }
-
-    /** Crea una nueva reserva */
-    public function crear(array $datos): bool
-    {
+        // Asegurar que id_empleados pueda ser NULL para evitar errores al agendar
         try {
-            $stmt = $this->db->prepare(
-                "INSERT INTO reserva (fecha, hora, estado, id_cliente, id_servicio, id_empleados)
-                 VALUES (?, ?, 'pendiente', ?, ?, ?)"
-            );
-            return $stmt->execute([
-                $datos['fecha'],
-                $datos['hora'],
-                $datos['id_cliente'],
-                $datos['id_servicio'],
-                $datos['id_empleados'] ?? null,
-            ]);
+            $this->db->exec("ALTER TABLE reserva MODIFY id_empleados INT(11) NULL");
         } catch (PDOException $e) {
-            error_log("Reserva::crear — " . $e->getMessage());
-            return false;
+            // Ignorar
         }
     }
 
-    /** Reservas de un cliente con info de servicio */
-    public function obtenerPorCliente(int $id_cliente): array
+    public function crear($datos)
     {
-        $stmt = $this->db->prepare(
-            "SELECT r.*, s.nombre_servicio, s.precio
-             FROM reserva r
-             INNER JOIN servicio s ON r.id_servicio = s.id_servicio
-             WHERE r.id_cliente = ?
-             ORDER BY r.fecha DESC, r.hora DESC"
-        );
-        $stmt->execute([$id_cliente]);
-        return $stmt->fetchAll();
+        $sql = "INSERT INTO reserva
+                (fecha, hora, id_cliente, id_servicio, id_empleados, estado)
+                VALUES (?, ?, ?, ?, ?, 'pendiente')";
+
+        $stmt = $this->db->prepare($sql);
+
+        return $stmt->execute(array(
+            $datos['fecha'],
+            $datos['hora'],
+            $datos['id_cliente'],
+            $datos['id_servicio'],
+            $datos['id_empleados']
+        ));
     }
 
-    /** Todas las reservas (para admin) */
-    public function obtenerTodas(): array
+    public function existeConflicto($fecha, $hora)
     {
-        return $this->db->query(
-            "SELECT r.*, c.nombre AS nombre_cliente, s.nombre_servicio
-             FROM reserva r
-             INNER JOIN cliente  c ON r.id_cliente  = c.id_cliente
-             INNER JOIN servicio s ON r.id_servicio = s.id_servicio
-             ORDER BY r.fecha DESC, r.hora DESC"
-        )->fetchAll();
+        $sql = "SELECT COUNT(*)
+                FROM reserva
+                WHERE fecha = ?
+                AND hora = ?
+                AND estado != 'cancelada'";
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute(array($fecha, $hora));
+
+        return $stmt->fetchColumn() > 0;
     }
 
-    /** Busca por id */
-    public function buscarPorId(int $id): array|false
+    public function obtenerPorCliente($id_cliente)
     {
-        $stmt = $this->db->prepare(
-            "SELECT * FROM reserva WHERE id_reserva = ? LIMIT 1"
-        );
-        $stmt->execute([$id]);
-        return $stmt->fetch();
+        $sql = "SELECT reserva.*,
+                       servicio.nombre_servicio,
+                       servicio.precio
+                FROM reserva
+                INNER JOIN servicio
+                    ON reserva.id_servicio = servicio.id_servicio
+                WHERE reserva.id_cliente = ?
+                ORDER BY reserva.fecha DESC, reserva.hora DESC";
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute(array($id_cliente));
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    /** Actualiza el estado de una reserva */
-    public function actualizarEstado(int $id, string $estado): bool
+    public function obtenerTodas()
     {
-        $stmt = $this->db->prepare(
-            "UPDATE reserva SET estado=? WHERE id_reserva=?"
-        );
-        return $stmt->execute([$estado, $id]);
+        $sql = "SELECT reserva.*,
+                       cliente.nombre AS nombre_cliente,
+                       servicio.nombre_servicio,
+                       servicio.precio,
+                       empleados.nombre AS nombre_empleado
+                FROM reserva
+                INNER JOIN cliente
+                    ON reserva.id_cliente = cliente.id_cliente
+                INNER JOIN servicio
+                    ON reserva.id_servicio = servicio.id_servicio
+                LEFT JOIN empleados
+                    ON reserva.id_empleados = empleados.id_empleados
+                ORDER BY reserva.fecha DESC, reserva.hora DESC";
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute();
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    /** Verifica si ya hay reserva en esa fecha/hora */
-    public function existeConflicto(string $fecha, string $hora): bool
+    public function buscarPorId($id)
     {
-        $stmt = $this->db->prepare(
-            "SELECT id_reserva FROM reserva
-             WHERE fecha=? AND hora=? AND estado != 'cancelada' LIMIT 1"
-        );
-        $stmt->execute([$fecha, $hora]);
-        return $stmt->rowCount() > 0;
+        $sql = "SELECT *
+                FROM reserva
+                WHERE id_reserva = ?";
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute(array($id));
+
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+
+    public function actualizarEstado($id, $estado)
+    {
+        $sql = "UPDATE reserva
+                SET estado = ?
+                WHERE id_reserva = ?";
+
+        $stmt = $this->db->prepare($sql);
+
+        return $stmt->execute(array($estado, $id));
     }
 }
 ?>

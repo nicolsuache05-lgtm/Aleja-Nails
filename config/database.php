@@ -4,7 +4,7 @@ class Database {
 
     private static string $host   = "127.0.0.1";
     private static int    $port   = 3320;
-    private static string $dbname = "aleja-nails";   // nombre exacto en HeidiSQL
+    private static string $dbname = "aleja-nails";   
     private static string $user   = "root";
     private static string $pass   = "";
     private static ?PDO   $conexion = null;

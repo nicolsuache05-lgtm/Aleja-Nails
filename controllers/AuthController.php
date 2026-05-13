@@ -1,11 +1,12 @@
 <?php
+
 require_once __DIR__ . '/../models/Administrador.php';
 require_once __DIR__ . '/../models/Cliente.php';
 
-class AuthController {
-
+class AuthController
+{
     private Administrador $adminModel;
-    private Cliente       $clienteModel;
+    private Cliente $clienteModel;
 
     private const BASE = '/Mi-proyecto-formativo/public/index.php';
 
@@ -14,89 +15,86 @@ class AuthController {
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
         }
-        $this->adminModel   = new Administrador();
+
+        $this->adminModel = new Administrador();
         $this->clienteModel = new Cliente();
     }
-
-    // ── MOSTRAR LOGIN ────────────────────────────────────────
 
     public function login(): void
     {
         if (isset($_SESSION['usuario_id'])) {
             $this->redirigirSegunRol();
         }
+
         require __DIR__ . '/../views/usuarios/login.php';
     }
 
-    // ── PROCESAR LOGIN ───────────────────────────────────────
-
     public function procesarLogin(): void
     {
-        $usuario  = trim($_POST['correo']   ?? '');   // campo "correo" del form
+        $usuario = trim($_POST['correo'] ?? '');
         $password = trim($_POST['password'] ?? '');
 
-        if (empty($usuario) || empty($password)) {
+        if ($usuario === '' || $password === '') {
             $_SESSION['flash_error'] = "Completa todos los campos.";
             $this->redirigir('login');
         }
 
-        // 1. Intentar como administrador (usuario + contraseña en texto plano)
         $admin = $this->adminModel->buscarPorUsuario($usuario);
-        if ($admin && $admin['contraseña'] === $password) {
+
+        if ($admin && isset($admin['contraseña']) && $admin['contraseña'] === $password) {
             $_SESSION['usuario_id'] = $admin['id_administrador'];
-            $_SESSION['nombre']     = $admin['nombre'];
-            $_SESSION['usuario']    = $admin['usuario'];
-            $_SESSION['rol']        = 'admin';
+            $_SESSION['nombre'] = $admin['nombre'];
+            $_SESSION['usuario'] = $admin['usuario'];
+            $_SESSION['rol'] = 'admin';
+
             $this->redirigir('adminPanel');
         }
 
-        // 2. Intentar como cliente (correo + password con hash)
         $cliente = $this->clienteModel->buscarPorCorreo($usuario);
+
         if ($cliente) {
-            // Soporte para cuentas sin password aún (campo vacío)
             if (empty($cliente['password'])) {
-                $_SESSION['flash_error'] = "Tu cuenta no tiene contraseña. Contacta al administrador.";
+                $_SESSION['flash_error'] = "Tu cuenta no tiene contraseña.";
                 $this->redirigir('login');
             }
+
             if (password_verify($password, $cliente['password'])) {
                 if (isset($cliente['activo']) && !$cliente['activo']) {
                     $_SESSION['flash_error'] = "Tu cuenta está desactivada.";
                     $this->redirigir('login');
                 }
+
                 $_SESSION['usuario_id'] = $cliente['id_cliente'];
-                $_SESSION['nombre']     = $cliente['nombre'];
-                $_SESSION['correo']     = $cliente['correo'];
-                $_SESSION['rol']        = 'cliente';
+                $_SESSION['nombre'] = $cliente['nombre'];
+                $_SESSION['correo'] = $cliente['correo'];
+                $_SESSION['rol'] = 'cliente';
+
                 $this->redirigir('dashboard');
             }
         }
 
-        // 3. Credenciales incorrectas
         $_SESSION['flash_error'] = "Usuario o contraseña incorrectos.";
         $this->redirigir('login');
     }
-
-    // ── MOSTRAR REGISTRO ─────────────────────────────────────
 
     public function mostrarRegistro(): void
     {
         if (isset($_SESSION['usuario_id'])) {
             $this->redirigirSegunRol();
         }
+
         require __DIR__ . '/../views/usuarios/registro.php';
     }
 
-    // ── PROCESAR REGISTRO (solo clientes) ────────────────────
-
     public function procesarRegistro(): void
     {
-        $nombre   = trim($_POST['nombre']    ?? '');
-        $telefono = trim($_POST['telefono']  ?? '');
-        $correo   = trim($_POST['correo']    ?? '');
-        $password = $_POST['password']       ?? '';
-        $confirmar= $_POST['confirmar']      ?? '';
+        $nombre = trim($_POST['nombre'] ?? '');
+        $telefono = trim($_POST['telefono'] ?? '');
+        $correo = trim($_POST['correo'] ?? '');
+        $password = $_POST['password'] ?? '';
+        $confirmar = $_POST['confirmar'] ?? '';
 
-        if (empty($nombre) || empty($correo) || empty($password)) {
+        if ($nombre === '' || $correo === '' || $password === '') {
             $_SESSION['flash_error'] = "Nombre, correo y contraseña son obligatorios.";
             $this->redirigir('registro');
         }
@@ -125,66 +123,37 @@ class AuthController {
             'nombre'   => $nombre,
             'telefono' => $telefono,
             'correo'   => $correo,
-            'password' => $password,
+            'password' => $password
         ]);
 
         if ($ok) {
-            $_SESSION['flash_ok'] = "Cuenta creada. Ya puedes iniciar sesión.";
+            $_SESSION['flash_ok'] = "Registro exitoso. Ya puedes iniciar sesión.";
             $this->redirigir('login');
         } else {
-            // Si el modelo ya puso un mensaje específico, no lo sobreescribimos
-            if (empty($_SESSION['flash_error'])) {
-                $_SESSION['flash_error'] = "Error al crear la cuenta. Intenta de nuevo.";
-            }
+            $_SESSION['flash_error'] = "Error al crear la cuenta.";
             $this->redirigir('registro');
         }
     }
 
-    // ── LOGOUT ───────────────────────────────────────────────
-
     public function logout(): void
     {
-        session_unset();
         session_destroy();
-        $this->redirigir('login');
+        header("Location: " . self::BASE);
+        exit;
     }
 
-    // ── GUARDS ───────────────────────────────────────────────
-
-    public function requerirLogin(): void
-    {
-        if (!isset($_SESSION['usuario_id'])) {
-            $this->redirigir('login');
-        }
-    }
-
-    public function requerirAdmin(): void
-    {
-        $this->requerirLogin();
-        if ($_SESSION['rol'] !== 'admin') {
-            http_response_code(403);
-            die("Acceso denegado.");
-        }
-    }
-
-    public function estaLogueado(): bool
-    {
-        return isset($_SESSION['usuario_id']);
-    }
-
-    // ── HELPERS PRIVADOS ─────────────────────────────────────
-
-    private function redirigir(string $action): never
+    private function redirigir(string $action): void
     {
         header("Location: " . self::BASE . "?action=" . $action);
         exit;
     }
 
-    private function redirigirSegunRol(): never
+    private function redirigirSegunRol(): void
     {
-        $this->redirigir(
-            $_SESSION['rol'] === 'admin' ? 'adminPanel' : 'dashboard'
-        );
+        if (($_SESSION['rol'] ?? '') === 'admin') {
+            $this->redirigir('adminPanel');
+        } else {
+            $this->redirigir('dashboard');
+        }
     }
 }
-?>

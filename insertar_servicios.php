@@ -30,13 +30,13 @@ if ($count > 0) {
     $servicios = [
         // Manicure 
         ['Manicure clásica',       'Manicure', 'Corte y esmaltado tradicional',      20000, $adminId],
-        ['Manicure semipermanente', 'Manicure', 'Esmaltado con lámpara UV',           45000, $adminId],
+        ['Manicure semipermanente', 'Manicure', 'Esmaltado con lámpara UV',           40000, $adminId],
         ['Uñas acrílicas',         'Manicure', 'Extensión en acrílico',               60000, $adminId],
         ['Retiro acrílico',        'Manicure', 'Retiro seguro de acrílico',           20000, $adminId],
         // Pedicure
         ['Pedicure clásico',       'Pedicure', 'Corte y esmaltado de pies',           20000, $adminId],
-        ['Pedicure spa',           'Pedicure', 'Exfoliación e hidratación',           40000, $adminId],
-        ['Pedicure semipermanente','Pedicure', 'Esmaltado permanente en pies',        50000, $adminId],
+        ['Pedicure spa',           'Pedicure', 'Exfoliación e hidratación',           35000, $adminId],
+        ['Pedicure semipermanente','Pedicure', 'Esmaltado permanente en pies',        40000, $adminId],
         // Capilar
         ['Corte de cabello',       'Capilar',  'Corte personalizado',                 15000, $adminId],
         ['Tinte',                  'Capilar',  'Coloración completa',                 25000, $adminId],
