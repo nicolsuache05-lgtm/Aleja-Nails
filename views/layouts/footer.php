@@ -7,5 +7,7 @@
   © <?= date('Y') ?> Aleja-Nails · Salón de Belleza Profesional
 </footer>
 
+<?php require_once __DIR__ . '/chatbot.php'; ?>
+
 </body>
 </html>

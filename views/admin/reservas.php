@@ -18,7 +18,8 @@ require_once __DIR__ . '/../layouts/sidebar.php';
             <tr>
               <th>#</th>
               <th>Cliente</th>
-              <th>Servicio</th>
+              <th>Servicios</th>
+              <th>Total</th>
               <th>Fecha</th>
               <th>Hora</th>
               <th>Estado</th>
@@ -30,7 +31,20 @@ require_once __DIR__ . '/../layouts/sidebar.php';
             <tr>
               <td><?= $r['id_reserva'] ?></td>
               <td><?= htmlspecialchars($r['nombre_cliente']) ?></td>
-              <td><?= htmlspecialchars($r['nombre_servicio']) ?></td>
+              <td>
+                <?php if (!empty($r['servicios']) && count($r['servicios']) > 1): ?>
+                  <ul style="margin:0;padding:0 0 0 14px;font-size:12px;color:#4a2030">
+                    <?php foreach ($r['servicios'] as $srv): ?>
+                      <li><?= htmlspecialchars($srv['nombre_servicio']) ?></li>
+                    <?php endforeach; ?>
+                  </ul>
+                <?php else: ?>
+                  <?= htmlspecialchars($r['nombre_servicio']) ?>
+                <?php endif; ?>
+              </td>
+              <td style="font-weight:700;color:#4a2030">
+                $<?= number_format((float)$r['precio'], 0, ',', '.') ?>
+              </td>
               <td><?= htmlspecialchars($r['fecha']) ?></td>
               <td><?= htmlspecialchars($r['hora']) ?></td>
               <td><span class="badge badge-<?= $r['estado'] ?>"><?= ucfirst($r['estado']) ?></span></td>

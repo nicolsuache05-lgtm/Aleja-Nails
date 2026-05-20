@@ -46,8 +46,8 @@ class AuthController
             $_SESSION['nombre'] = $admin['nombre'];
             $_SESSION['usuario'] = $admin['usuario'];
             $_SESSION['rol'] = 'admin';
-
-            $this->redirigir('adminPanel');
+            $this->redirigir('admin');
+          
         }
 
         $cliente = $this->clienteModel->buscarPorCorreo($usuario);
@@ -69,7 +69,7 @@ class AuthController
                 $_SESSION['correo'] = $cliente['correo'];
                 $_SESSION['rol'] = 'cliente';
 
-                $this->redirigir('dashboard');
+               $this->redirigir('clientes');
             }
         }
 

@@ -6,6 +6,7 @@ if (session_status() === PHP_SESSION_NONE) {
 require_once __DIR__ . '/../controllers/AuthController.php';
 require_once __DIR__ . '/../controllers/UsuarioController.php';
 require_once __DIR__ . '/../controllers/AdminUsuarioController.php';
+require_once __DIR__ . '/../controllers/ChatbotController.php';
 
 $action = $_GET['action'] ?? 'inicio';
 
@@ -36,6 +37,12 @@ switch ($action) {
         exit;
     case 'cancelarReserva':
         (new UsuarioController())->cancelarReserva();
+        exit;
+    case 'pagar':
+        (new UsuarioController())->pagar();
+        exit;
+    case 'chatbot':
+        (new ChatbotController())->responder();
         exit;
     case 'adminPanel':
         (new AdminUsuarioController())->dashboard();
@@ -75,7 +82,6 @@ switch ($action) {
 
 <head>
 
-    <meta charset="UTF-8">
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
@@ -83,7 +89,9 @@ switch ($action) {
 
     <link rel="icon" type="image/png" href="../img/favicon.png">
 
-    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- TAILWIND -->
+     <script src="https://cdn.tailwindcss.com"></script>
+     <meta charset="UTF-8">
 
     <link rel="stylesheet"
           href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -122,6 +130,7 @@ switch ($action) {
     </style>
 
 </head>
+
 
 <body class="bg-white text-gray-800">
 
@@ -315,6 +324,11 @@ switch ($action) {
     © <?= date('Y') ?> Aleja-Nails · Salón de Belleza Profesional
 
 </footer>
+
+<?php
+// Chatbot flotante en la página de inicio
+require_once __DIR__ . '/../views/layouts/chatbot.php';
+?>
 
 <script>
 
