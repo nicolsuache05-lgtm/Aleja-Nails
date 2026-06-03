@@ -151,22 +151,21 @@ class AdminUsuarioController
 
     public function verPagos(): void
     {
-        $sql = "
-            SELECT 
-                p.*, 
-                c.nombre AS nombre_cliente, 
-                s.nombre_servicio
-            FROM pago p
-            INNER JOIN reserva r 
-                ON p.id_reserva = r.id_reserva
-            INNER JOIN cliente c 
-                ON r.id_cliente = c.id_cliente
-            INNER JOIN servicio s 
-                ON r.id_servicio = s.id_servicio
-            ORDER BY p.id_pago DESC
-        ";
+        try {
+            $sql = "SELECT p.*,
+                           c.nombre AS nombre_cliente,
+                           s.nombre_servicio
+                    FROM pago p
+                    INNER JOIN reserva  r ON p.id_reserva  = r.id_reserva
+                    INNER JOIN cliente  c ON r.id_cliente  = c.id_cliente
+                    INNER JOIN servicio s ON r.id_servicio = s.id_servicio
+                    ORDER BY p.id_pago DESC";
 
-        $pagos = $this->db->query($sql)->fetchAll();
+            $pagos = $this->db->query($sql)->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            error_log("AdminController::verPagos — " . $e->getMessage());
+            $pagos = [];
+        }
 
         require __DIR__ . '/../views/admin/pagos.php';
     }

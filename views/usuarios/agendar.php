@@ -12,9 +12,9 @@ $iconos = ['Manicure'=>'💅','Pedicure'=>'👣','Capilar'=>'💆🏽‍♀️',
 ?>
 
 <main>
-  <h1 style="font-size:22px;font-weight:600;color:#c0375a;margin-bottom:1.5rem">
-    📅 Agendar nueva cita
-  </h1>
+  <div class="page-title">
+    <span>📅</span> Agendar nueva cita
+  </div>
 
   <?php if (!empty($_SESSION['flash_error'])): ?>
     <div style="background:#fde8e8;border:1px solid #f5c6cb;color:#a32d2d;

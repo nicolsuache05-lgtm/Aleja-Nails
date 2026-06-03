@@ -6,11 +6,16 @@ require_once __DIR__ . '/../layouts/sidebar.php';
 
 <main>
 
-  <h1 style="font-size:22px;font-weight:600;color:#c0375a;margin-bottom:1.5rem">📅 Reservas</h1>
+  <div class="page-title">
+    <span>📅</span> Reservas
+  </div>
 
   <div class="card">
     <?php if (empty($reservas)): ?>
-      <p style="color:#b07090">No hay reservas registradas.</p>
+      <div class="empty-state">
+        <div class="empty-icon">📭</div>
+        <p>No hay reservas registradas.</p>
+      </div>
     <?php else: ?>
       <div class="tabla-wrap">
         <table>
@@ -29,31 +34,64 @@ require_once __DIR__ . '/../layouts/sidebar.php';
           <tbody>
             <?php foreach ($reservas as $r): ?>
             <tr>
-              <td><?= $r['id_reserva'] ?></td>
-              <td><?= htmlspecialchars($r['nombre_cliente']) ?></td>
+              <td style="color:var(--text-muted);font-size:12px">#<?= $r['id_reserva'] ?></td>
+
+              <td>
+                <div style="display:flex;align-items:center;gap:8px">
+                  <div style="width:30px;height:30px;border-radius:50%;
+                              background:linear-gradient(135deg,#fce4ef,#f4c0d1);
+                              display:flex;align-items:center;justify-content:center;
+                              font-size:13px;flex-shrink:0">💅</div>
+                  <span style="font-weight:500"><?= htmlspecialchars($r['nombre_cliente']) ?></span>
+                </div>
+              </td>
+
               <td>
                 <?php if (!empty($r['servicios']) && count($r['servicios']) > 1): ?>
-                  <ul style="margin:0;padding:0 0 0 14px;font-size:12px;color:#4a2030">
+                  <div style="display:flex;flex-direction:column;gap:2px">
                     <?php foreach ($r['servicios'] as $srv): ?>
-                      <li><?= htmlspecialchars($srv['nombre_servicio']) ?></li>
+                      <span style="font-size:12px;color:var(--text-soft)">
+                        • <?= htmlspecialchars($srv['nombre_servicio']) ?>
+                      </span>
                     <?php endforeach; ?>
-                  </ul>
+                  </div>
                 <?php else: ?>
-                  <?= htmlspecialchars($r['nombre_servicio']) ?>
+                  <span style="font-size:13px"><?= htmlspecialchars($r['nombre_servicio']) ?></span>
                 <?php endif; ?>
               </td>
-              <td style="font-weight:700;color:#4a2030">
+
+              <td style="font-weight:700;color:var(--pink-dark)">
                 $<?= number_format((float)$r['precio'], 0, ',', '.') ?>
               </td>
-              <td><?= htmlspecialchars($r['fecha']) ?></td>
-              <td><?= htmlspecialchars($r['hora']) ?></td>
-              <td><span class="badge badge-<?= $r['estado'] ?>"><?= ucfirst($r['estado']) ?></span></td>
+
+              <td><?= htmlspecialchars(date('d/m/Y', strtotime($r['fecha']))) ?></td>
+              <td style="color:var(--text-soft)"><?= htmlspecialchars($r['hora']) ?></td>
+
               <td>
-                <form action="index.php?action=actualizarReserva" method="POST" style="display:flex;gap:6px">
+                <span class="badge badge-<?= $r['estado'] ?>">
+                  <?= ucfirst(str_replace('_',' ',$r['estado'])) ?>
+                </span>
+              </td>
+
+              <td>
+                <form action="index.php?action=actualizarReserva" method="POST"
+                      style="display:flex;gap:6px;align-items:center">
                   <input type="hidden" name="id" value="<?= $r['id_reserva'] ?>">
-                  <select name="estado" style="padding:5px 8px;border-radius:8px;border:1px solid #f4c0d1;font-size:12px">
+                  <select name="estado" style="
+                    padding: 6px 10px;
+                    border-radius: 8px;
+                    border: 1.5px solid var(--pink-border);
+                    font-family: 'Poppins', sans-serif;
+                    font-size: 12px;
+                    color: var(--text);
+                    background: var(--pink-bg);
+                    outline: none;
+                    cursor: pointer;
+                  ">
                     <?php foreach (['pendiente','confirmada','en_curso','completada','cancelada'] as $e): ?>
-                      <option value="<?= $e ?>" <?= $r['estado'] === $e ? 'selected' : '' ?>><?= ucfirst($e) ?></option>
+                      <option value="<?= $e ?>" <?= $r['estado'] === $e ? 'selected' : '' ?>>
+                        <?= ucfirst(str_replace('_',' ',$e)) ?>
+                      </option>
                     <?php endforeach; ?>
                   </select>
                   <button type="submit" class="btn btn-primary btn-sm">Guardar</button>

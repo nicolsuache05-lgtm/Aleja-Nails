@@ -6,9 +6,11 @@ require_once __DIR__ . '/../layouts/sidebar.php';
 
 <main>
 
-  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem">
-    <h1 style="font-size:22px;font-weight:600;color:#c0375a">📅 Mis Reservas</h1>
-    <a href="index.php?action=agendarCita" class="btn btn-primary">+ Nueva reserva</a>
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.75rem">
+    <div class="page-title" style="margin-bottom:0">
+      <span>📅</span> Mis Reservas
+    </div>
+    <a href="index.php?action=agendarCita" class="btn btn-primary">📅 Nueva reserva</a>
   </div>
 
   <?php if (!empty($_SESSION['flash_ok'])): ?>
@@ -29,9 +31,9 @@ require_once __DIR__ . '/../layouts/sidebar.php';
 
   <div class="card">
     <?php if (empty($reservas)): ?>
-      <p style="color:#b07090;text-align:center;padding:2rem">
+      <p style="color:var(--text-muted);text-align:center;padding:3rem 1rem">
         No tienes reservas aún.
-        <a href="index.php?action=agendarCita" style="color:#c0375a">
+        <a href="index.php?action=agendarCita" style="color:var(--pink-dark);font-weight:600">
           ¡Agenda tu primera cita!
         </a>
       </p>

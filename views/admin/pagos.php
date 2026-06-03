@@ -10,7 +10,10 @@ require_once __DIR__ . '/../layouts/sidebar.php';
 
   <div class="card">
     <?php if (empty($pagos)): ?>
-      <p style="color:#b07090">No hay pagos registrados.</p>
+      <div class="empty-state">
+        <div class="empty-icon">💸</div>
+        <p>No hay pagos registrados aún.</p>
+      </div>
     <?php else: ?>
       <div class="tabla-wrap">
         <table>

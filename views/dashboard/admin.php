@@ -14,21 +14,21 @@ require_once __DIR__ . '/../layouts/sidebar.php';
   <div class="stats-grid">
     <div class="stat-card">
       <div class="label">Total clientes</div>
-      <div class="value"><?= $totalClientes ?? 0 ?></div>
-    </div>
+        <div class="value"><?= $totalClientes ?? 0 ?></div>
+      </div>
     <div class="stat-card">
       <div class="label">Total reservas</div>
-      <div class="value"><?= $totalReservas ?? 0 ?></div>
-    </div>
+        <div class="value"><?= $totalReservas ?? 0 ?></div>
+      </div>
     <div class="stat-card">
       <div class="label">Total pagos</div>
-      <div class="value"><?= $totalPagos ?? 0 ?></div>
-    </div>
+        <div class="value"><?= $totalPagos ?? 0 ?></div>
+      </div>
     <div class="stat-card">
-      <div class="label">Servicios</div>
-      <div class="value"><?= $totalServicios ?? 0 ?></div>
+        <div class="label">Servicios</div>
+        <div class="value"><?= $totalServicios ?? 0 ?></div>
+      </div>
     </div>
-  </div>
 
   <!-- Accesos rápidos -->
   <div class="card">
