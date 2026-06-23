@@ -109,11 +109,11 @@ Mientras espera la respuesta del servidor, muestra tres puntos animados (●●�
 En `ChatbotController.php` se definen como constantes:
 
 ```php
-private const TEL_DISPLAY = '300 123 4567';
-private const TEL_WA      = '573001234567';
-private const NEQUI       = '300 123 4567';
-private const DAVIPLATA   = '300 123 4567';
-private const TITULAR     = 'Alejandra García';
+private const TEL_DISPLAY  = '304 408 5465';
+private const TEL_WA       = '57 3044085465';   // Formato internacional sin +
+private const NEQUI        = '304 408 5465';
+private const DAVIPLATA    = '304 408 5465';
+private const TITULAR      = 'Alejandra Vanegas';
 ```
 
-Para cambiar el número del salón, solo se edita este archivo.
+Para actualizar los datos bancarios o de contacto del salón, basta con editar estas constantes en el controlador del Chatbot.

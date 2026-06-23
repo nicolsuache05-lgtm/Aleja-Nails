@@ -1,65 +1,91 @@
 # Vista: Dashboard Cliente
 
 **Archivo:** `views/dashboard/cliente.php`  
-**Ruta de acceso:** `?action=dashboard`  
-**Rol requerido:** Cliente autenticado  
+**Acción:** `?action=dashboard`  
+**Rol:** Cliente autenticado  
 **Controlador:** `UsuarioController::dashboard()`
 
 ---
 
 ## ¿Qué hace esta vista?
 
-Es la pantalla principal del cliente después de iniciar sesión. Muestra un resumen de sus citas, accesos rápidos y el catálogo de servicios disponibles.
+Es la pantalla principal del cliente después de iniciar sesión. Muestra un resumen personal de sus citas, acciones rápidas, la tabla con sus últimas 5 reservas y el catálogo de servicios disponibles.
 
 ---
 
-## Secciones de la vista
+## Estructura visual
 
-### 1. Saludo personalizado
+```
+💅 Bienvenida, María
+Aquí puedes gestionar tus citas y ver tus servicios favoritos.
 
-Muestra el nombre del cliente tomado de `$_SESSION['nombre']`.
+┌──────────────┐ ┌──────────────┐ ┌──────────────┐
+│ 📅 Total     │ │ ⏳ Pendientes │ │ ✅ Completadas│
+│   citas      │ │              │ │              │
+│   stat-pink  │ │  stat-orange │ │  stat-green  │
+│     8        │ │      2       │ │      5       │
+└──────────────┘ └──────────────┘ └──────────────┘
+
+⚡ ¿Qué deseas hacer?
+[ 📅 Agendar nueva cita ]  [ 📋 Ver mis reservas ]
+
+📅 Mis últimas reservas
+┌──────────────────┬────────────┬──────┬────────┬──────────┬────────┐
+│ Servicio         │ Fecha      │ Hora │ Estado │ Total    │ Acción │
+├──────────────────┼────────────┼──────┼────────┼──────────┼────────┤
+│ Manicure + Pedi  │ 01/07/2026 │ 10:00│🌸Conf. │ $125.000 │   —    │
+│ Corte cabello    │ 25/06/2026 │ 14:30│🟡Pend. │ $45.000  │💳 Pagar│
+└──────────────────┴────────────┴──────┴────────┴──────────┴────────┘
+
+💅 Nuestros servicios
+┌──────────────┐ ┌──────────────┐ ┌──────────────┐
+│ 💅            │ │ 👣            │ │ 💆🏽‍♀️           │
+│ Manicure gel  │ │ Pedicure     │ │ Keratina     │
+│ $80.000      │ │ $60.000      │ │ $120.000     │
+└──────────────┘ └──────────────┘ └──────────────┘
+```
 
 ---
 
-### 2. Tarjetas de estadísticas
+## Tarjetas de estadísticas
 
 Calculadas en PHP a partir del array `$reservas`:
 
-| Tarjeta | Cálculo |
-|---------|---------|
-| Mis reservas | `count($reservas)` |
-| Pendientes | Filtra reservas donde `estado === 'pendiente'` |
-| Completadas | Filtra reservas donde `estado === 'completada'` |
+| Tarjeta | Variante CSS | Ícono | Cálculo PHP |
+|---------|-------------|-------|-------------|
+| Total citas | `stat-pink` | 📅 | `count($reservas)` |
+| Pendientes | `stat-orange` | ⏳ | `count(filter estado==='pendiente')` |
+| Completadas | `stat-green` | ✅ | `count(filter estado==='completada')` |
 
 ---
 
-### 3. Acciones rápidas
+## Tabla de últimas 5 reservas
 
-| Botón | Redirige a |
-|-------|-----------|
-| 📅 Agendar nueva cita | `?action=agendarCita` |
-| 📋 Ver mis reservas | `?action=misReservas` |
+Muestra solo las primeras 5 con `array_slice($reservas, 0, 5)`.
 
----
+| Columna | Fuente | Descripción |
+|---------|--------|-------------|
+| Servicio | `$r['nombre_servicio']` | Nombre(s) del servicio |
+| Fecha | `$r['fecha']` | Formateada como `dd/mm/YYYY` |
+| Hora | `$r['hora']` | HH:MM |
+| Estado | `$r['estado']` | Badge de color |
+| Total | `$r['precio']` | En rosado negrita |
+| Acción | — | Botón 💳 Pagar si pendiente sin pago |
 
-### 4. Últimas 5 reservas
+**Botón Pagar:** aparece si `$r['estado'] === 'pendiente'` y `empty($r['pagado'])`.
+Redirige a `?action=pagar&id={id_reserva}`.
 
-Tabla con las 5 reservas más recientes del cliente:
-
-| Columna | Descripción |
-|---------|-------------|
-| Servicio | Nombre del servicio principal |
-| Fecha | Fecha de la cita |
-| Hora | Hora de la cita |
-| Estado | Badge de color según estado |
-| Precio | Total de la reserva |
-| Acción | Botón "Cancelar" si está pendiente |
+Si hay más de 5 reservas, aparece el enlace **"Ver todas las reservas →"**.
 
 ---
 
-### 5. Catálogo de servicios
+## Catálogo de servicios
 
-Tarjetas con todos los servicios disponibles mostrando nombre, descripción y precio.
+Cuadrícula de tarjetas con efecto hover de elevación. Cada tarjeta muestra:
+- Ícono de categoría (💅 / 👣 / 💆🏽‍♀️ / ✨)
+- Nombre del servicio
+- Descripción breve
+- Precio en COP
 
 ---
 
@@ -67,22 +93,38 @@ Tarjetas con todos los servicios disponibles mostrando nombre, descripción y pr
 
 ```
 UsuarioController::dashboard()
-    ├── Reserva::obtenerPorCliente($_SESSION['usuario_id'])
-    │       └── SELECT + detalle_servicio por cliente
-    │               └── $reservas
-    │
-    └── Servicio::obtenerTodos()
-            └── SELECT * FROM servicio
-                    └── $servicios
-                            └── views/dashboard/cliente.php
+        │
+        ├── Reserva::obtenerPorCliente($_SESSION['usuario_id'])
+        │       │
+        │       ├── SELECT reserva.* WHERE id_cliente = ?
+        │       ├── Para cada reserva → obtiene servicios de detalle_servicio
+        │       └── Verifica pago: SELECT FROM pago WHERE id_reserva = ?
+        │               └── $reservas (con 'servicios', 'precio', 'pagado')
+        │
+        └── Servicio::obtenerTodos()
+                └── SELECT * FROM servicio ORDER BY categoria, nombre_servicio
+                        └── $servicios
+                                └── views/dashboard/cliente.php
 ```
 
 ---
 
-## Tablas de base de datos involucradas
+## Caso sin reservas
 
-| Tabla | Uso |
-|-------|-----|
-| `reserva` | Reservas del cliente |
-| `detalle_servicio` | Servicios de cada reserva |
-| `servicio` | Catálogo completo de servicios |
+Se muestra un estado vacío:
+```
+📭  (ícono grande)
+Aún no tienes reservas agendadas.
+[ 📅 Agendar mi primera cita ]
+```
+
+---
+
+## Seguridad
+
+```
+UsuarioController::dashboard()
+        └── validarSesion()
+                └── Si no hay $_SESSION['usuario_id']
+                        → Redirige a ?action=login
+```

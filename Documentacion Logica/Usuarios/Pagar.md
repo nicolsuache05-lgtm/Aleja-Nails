@@ -41,17 +41,22 @@ Muestra el resumen completo de la reserva y permite al cliente seleccionar el m�
 | ❤️ Daviplata | 304 408 5465 |
 | 👤 Titular | Alejandra Vanegas |
 
-- Cada número tiene un botón **📋 Copiar** que copia al portapapeles
-- Aviso para enviar el comprobante por WhatsApp
+- Cada número tiene un botón **📋 Copiar** que copia al portapapeles.
+- Incluye un cartel de aviso para enviar el comprobante de transferencia al WhatsApp de atención.
 
 ---
 
-## Lógica del botón Copiar
+## Lógica del botón Copiar (Micro-interacción)
+
+Al hacer clic en el botón de copia, se ejecuta una función en JavaScript que utiliza la API del portapapeles e implementa una transición visual temporal:
 
 ```javascript
 navigator.clipboard.writeText(numero)
-    → Cambia el botón a "✅ Copiado" por 2 segundos
-    → Luego vuelve al texto original
+    → Cambia el texto del botón a "✅ Copiado"
+    → Cambia el color de fondo a verde claro (#e8f5e9)
+    → Cambia el color del texto a verde oscuro (#2e7d32)
+    → Cambia el borde a verde suave (#a5d6a7)
+    → Mediante setTimeout, revierte todos los estilos al estado original tras 2 segundos (2000 ms)
 ```
 
 ---

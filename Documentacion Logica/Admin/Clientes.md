@@ -1,74 +1,122 @@
-# Vista: Gestión de Clientes (Admin)
+# Vista: Gestión de Clientes
 
 **Archivo:** `views/admin/clientes.php`  
-**Ruta de acceso:** `?action=listarClientes`  
-**Rol requerido:** Administrador  
+**Acción:** `?action=listarClientes`  
+**Rol:** Administrador  
 **Controlador:** `AdminUsuarioController::listarClientes()`
 
 ---
 
 ## ¿Qué hace esta vista?
 
-Permite al administrador ver todos los clientes registrados en el sistema y activar o desactivar sus cuentas.
+Muestra la lista completa de clientes registrados en el sistema. El administrador puede ver su información de contacto, su estado de cuenta y activarlos o desactivarlos con un solo clic.
 
 ---
 
-## Datos que muestra
+## Estructura visual
 
-| Columna | Descripción |
-|---------|-------------|
-| `#` | ID único del cliente en la base de datos |
-| `Nombre` | Nombre completo del cliente |
-| `Correo` | Correo electrónico (usado para iniciar sesión) |
-| `Teléfono` | Número de contacto |
-| `Estado` | Badge verde **Activo** o rojo **Inactivo** |
-| `Acción` | Botón para cambiar el estado del cliente |
-
----
-
-## Acciones disponibles
-
-### Desactivar / Activar cliente
-- Si el cliente está **Activo** → aparece botón **"Desactivar"**
-- Si el cliente está **Inactivo** → aparece botón **"Activar"**
-- Al hacer clic se pide confirmación con un diálogo
-- Redirige a `?action=toggleCliente&id={id_cliente}`
-
-> Un cliente desactivado **no puede iniciar sesión** en el sistema.
+```
+┌─────────────────────────────────────────────────────────────┐
+│  👥 Clientes                                                │
+├────┬─────────────────┬──────────────────┬──────────┬────────┤
+│ #  │ Cliente         │ Correo           │ Teléfono │ Estado │ Acción
+├────┼─────────────────┼──────────────────┼──────────┼────────┤
+│ 5  │ 👤 María García │ maria@gmail.com  │ 300...   │ Activo │ 🔒 Desactivar
+│ 4  │ 👤 Ana López    │ ana@gmail.com    │ 311...   │Inactivo│ 🔓 Activar
+└────┴─────────────────┴──────────────────┴──────────┴────────┘
+```
 
 ---
 
-## Flujo de datos
+## Columnas de la tabla
+
+| Columna | Fuente en BD | Descripción |
+|---------|-------------|-------------|
+| `#` | `cliente.id_cliente` | ID en gris discreto, prefijado con `#` |
+| `Cliente` | `cliente.nombre` | Avatar emoji 👤 + nombre en negrita |
+| `Correo` | `cliente.correo` | Email usado para iniciar sesión |
+| `Teléfono` | `cliente.telefono` | Número de contacto, muestra `—` si no hay |
+| `Estado` | `cliente.activo` | Badge verde **Activo** / rojo **Inactivo** |
+| `Acción` | — | Botón para cambiar el estado |
+
+---
+
+## Botón de acción (toggle estado)
+
+```
+Si activo == 1:
+    Botón  →  🔒 Desactivar  (estilo btn-danger, rojo)
+    Acción →  ?action=toggleCliente&id={id}
+    Efecto →  cliente.activo = 0
+
+Si activo == 0:
+    Botón  →  🔓 Activar  (estilo btn-success, verde)
+    Acción →  ?action=toggleCliente&id={id}
+    Efecto →  cliente.activo = 1
+```
+
+Antes de ejecutar, el navegador muestra un `confirm()`:
+> *"¿Cambiar estado del cliente?"*
+
+> ⚠️ Un cliente con `activo = 0` **no puede iniciar sesión**. El sistema verifica este campo en `AuthController::procesarLogin()`.
+
+---
+
+## Flujo completo de datos
 
 ```
 AdminUsuarioController::listarClientes()
-    └── Cliente::obtenerTodos()
-            └── SELECT * FROM cliente ORDER BY id_cliente DESC
-                    └── Retorna array con todos los clientes
-                            └── views/admin/clientes.php
+        │
+        └── Cliente::obtenerTodos()
+                │
+                └── SELECT * FROM cliente ORDER BY id_cliente DESC
+                        │
+                        └── Array $clientes → views/admin/clientes.php
+```
+
+**Acción Desactivar / Activar:**
+```
+GET ?action=toggleCliente&id={id}
+        │
+        ├── Cliente::buscarPorId($id)
+        │       └── SELECT * FROM cliente WHERE id_cliente = ?
+        │
+        ├── Lee el valor actual de $cliente['activo']
+        │       Si 1 → nuevo estado = 0
+        │       Si 0 → nuevo estado = 1
+        │
+        └── Cliente::cambiarEstado($id, $nuevoEstado)
+                └── UPDATE cliente SET activo = ? WHERE id_cliente = ?
+                        └── Redirige a ?action=listarClientes
 ```
 
 ---
 
-## Tabla de base de datos involucrada
+## Tabla de base de datos
 
 **`cliente`**
 
-| Campo | Uso en esta vista |
-|-------|-------------------|
-| `id_cliente` | Columna # y parámetro del botón acción |
-| `nombre` | Columna Nombre |
-| `correo` | Columna Correo |
-| `telefono` | Columna Teléfono |
-| `activo` | Determina el badge y el texto del botón |
+| Campo | Tipo | Descripción |
+|-------|------|-------------|
+| `id_cliente` | INT PK | Identificador único |
+| `nombre` | VARCHAR(30) | Nombre completo |
+| `correo` | VARCHAR(25) | Email de acceso |
+| `telefono` | VARCHAR(15) | Teléfono (puede ser NULL) |
+| `activo` | TINYINT(1) | 1 = activo, 0 = desactivado |
 
 ---
 
-## Lógica de estado
+## Caso sin clientes
 
+Si no hay clientes registrados, se muestra un estado vacío:
 ```
-$activo = $c['activo'] ?? 1
+👤  (ícono grande)
+No hay clientes registrados aún.
+```
 
-Si $activo == 1  →  Badge "Activo"   + Botón "Desactivar" (rojo)
-Si $activo == 0  →  Badge "Inactivo" + Botón "Activar"    (outline)
-```
+---
+
+## Seguridad
+
+- El método `validarAdmin()` verifica `$_SESSION['rol'] === 'admin'` antes de cargar esta vista.
+- Si un cliente intenta acceder directamente, recibe HTTP 403.

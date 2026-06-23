@@ -8,63 +8,80 @@
 
 ## ¿Qué hace este layout?
 
-Genera el menú de navegación lateral izquierdo. Los links que muestra cambian automáticamente según el rol del usuario en sesión.
+Genera la barra de navegación lateral izquierda fija (`<aside>`). Este menú cambia automáticamente las opciones disponibles según el rol de la sesión activa y resalta visualmente el enlace activo. Además, incorpora una tarjeta de perfil de usuario simplificada en la parte superior.
 
 ---
 
-## Menú según rol
+## Componentes y Secciones
 
-### Menú del Cliente
+### 1. Perfil Mini de Usuario
+Ubicado en la parte superior del Sidebar. Contiene:
+- **Avatar:** Círculo con degradado de rosa a rosa oscuro (`linear-gradient(135deg, #e8527a, #c93060)`) y sombra suave. Muestra un emoji dinámico según el rol:
+  - 👑 para **Administrador**
+  - 💅 para **Cliente**
+- **Nombre:** Muestra el valor de `$_SESSION['nombre']` (con escape HTML).
+- **Badge de Rol:** 
+  - *Administrador:* Fondo rosado claro con texto rojo oscuro.
+  - *Cliente:* Fondo verde claro con texto verde oscuro.
 
-| Ícono | Label | Acción |
-|-------|-------|--------|
-| 🏠 | Inicio | `?action=dashboard` |
-| 📒 | Agendar cita | `?action=agendarCita` |
-| 📅 | Mis reservas | `?action=misReservas` |
-| 🚪 | Salir | `?action=logout` |
+### 2. Menú de Navegación según Rol
 
-### Menú del Administrador
+El menú se carga dinámicamente desde un arreglo asociativo `$links`:
 
-| Ícono | Label | Acción |
-|-------|-------|--------|
-| 📊 | Dashboard | `?action=adminPanel` |
-| 📅 | Reservas | `?action=listarReservas` |
-| 👥 | Clientes | `?action=listarClientes` |
-| 💅 | Servicios | `?action=listarServicios` |
-| 💰 | Pagos | `?action=verPagos` |
-| 🚪 | Salir | `?action=logout` |
+#### Menú del Cliente
+| Ícono | Label (Etiqueta) | Acción URL | Color de ícono inactivo |
+|:---|:---|:---|:---|
+| 🏠 | Inicio | `?action=dashboard` | `#fce4ef` |
+| 📅 | Agendar cita | `?action=agendarCita` | `#fce4ef` |
+| 📋 | Mis reservas | `?action=misReservas` | `#fce4ef` |
+
+#### Menú del Administrador
+| Ícono | Label (Etiqueta) | Acción URL | Color de ícono inactivo |
+|:---|:---|:---|:---|
+| 📊 | Dashboard | `?action=adminPanel` | `#f3e5f5` |
+| 📅 | Reservas | `?action=listarReservas` | `#fce4ef` |
+| 👥 | Clientes | `?action=listarClientes` | `#e3f2fd` |
+| 💅 | Servicios | `?action=listarServicios` | `#fce4ef` |
+| 💰 | Pagos | `?action=verPagos` | `#e8f5e9` |
 
 ---
 
-## Lógica de resaltado activo
+## Lógica de Resaltado Activo
 
-El link correspondiente a la página actual se resalta con fondo rosado:
+El archivo PHP determina el estado activo comparando el valor de `$_GET['action']` con la propiedad `'action'` del enlace. Los estilos aplicados dinámicamente son:
 
 ```php
-$action = $_GET['action'] ?? '';
+$activo = ($action === $link['action']);
 
-// Si el link coincide con la acción actual:
-color:     '#c0375a'    // rosado oscuro
-background: '#eb6ba5ff' // rosado activo
+// Si el enlace está activo ($activo == true):
+font-weight: 600;
+color:       '#c93060';                             // Rosa oscuro
+background:  'linear-gradient(135deg,#fce4ef,#fdf0f5)'; // Degradado rosa suave
+border:      '1px solid #f4c0d1';                   // Borde rosa delimitado
 
-// Si no coincide:
-color:     '#8a5068'    // gris rosado
-background: 'transparent'
+// Si el enlace está inactivo ($activo == false):
+font-weight: 500;
+color:       '#7a4a5e';                             // Texto medio
+background:  'transparent';
+border:      '1px solid transparent';
 ```
 
----
-
-## Variables que usa
-
-| Variable | Origen | Uso |
-|----------|--------|-----|
-| `$_SESSION['rol']` | Sesión PHP | Determina qué menú mostrar |
-| `$_GET['action']` | URL | Determina qué link resaltar como activo |
+Adicionalmente, si el enlace está activo, se añade un pequeño punto rosa (`#e8527a`) al final del botón para indicar la ubicación del cursor de navegación.
 
 ---
 
-## Dimensiones
+## Botón de Salida (Cierre de Sesión)
 
-- **Ancho:** 220px fijo
-- **Fondo:** Blanco con borde derecho rosado
-- **Padding:** 1.5rem vertical, 1rem horizontal
+En la base del menú lateral se incluye de manera fija el botón **Cerrar sesión** (`🚪`), con estilos diferenciados:
+- **Por defecto:** Texto color rosa silenciado (`#b07090`).
+- **Hover (CSS inline / JS):** Cambia a fondo rojo muy claro (`#fff0f0`), texto rojo (`#c0392b`) y borde rojo claro (`#f5c6cb`).
+
+---
+
+## Dimensiones del Layout
+
+- **Ancho:** 230px de ancho fijo.
+- **Estructura:** Flexbox vertical (`flex-direction: column`) con un espaciado inter-elementos de 4px.
+- **Fondo:** Blanco puro (`#ffffff`) con una línea de división derecha muy sutil (`1px solid #fde8f0`).
+- **Padding:** 1.5rem vertical y 1rem horizontal.
+

@@ -62,12 +62,31 @@ Genera el `<head>` HTML completo, la barra de navegación superior (topbar) y ab
 
 ---
 
-## Paleta de colores del sistema
+## Paleta de Colores y Variables de Diseño CSS (:root)
 
-| Color | Hex | Uso |
-|-------|-----|-----|
-| Rosa principal | `#e8527a` | Botones, bordes activos |
-| Rosa oscuro | `#c93060` | Hover, degradados |
-| Rosa fondo | `#fdf0f5` | Fondo de inputs y tarjetas |
-| Vino texto | `#4a2030` | Texto principal |
-| Rosa título | `#c0375a` | Títulos y encabezados |
+El diseño visual del sistema está centralizado en variables personalizadas de CSS (`:root`), lo que permite cambiar la estética global modificando únicamente este archivo:
+
+### Colores del Sistema
+
+| Variable CSS | Valor Hex | Uso en el Sistema |
+|:---|:---|:---|
+| `--pink` | `#e8527a` | Rosa principal: botones primarios, bordes de enfoque y elementos activos |
+| `--pink-dark` | `#c93060` | Rosa oscuro: estados hover, texto destacado y degradados secundarios |
+| `--pink-light` | `#fce4ef` | Rosa claro: fondos hover suaves y badges de confirmación |
+| `--pink-bg` | `#fdf5f8` | Fondo rosa: fondo general de la página y de campos de entrada |
+| `--pink-border` | `#f4c0d1` | Borde rosa: bordes de campos y divisiones de tarjetas |
+| `--text` | `#3d1a28` | Color de texto principal: títulos y cuerpo de texto de alta visibilidad |
+| `--text-soft` | `#7a4a5e` | Texto medio: etiquetas de formularios y descripciones |
+| `--text-muted` | `#b07090` | Texto silenciado: subtítulos e íconos inactivos |
+| `--white` | `#ffffff` | Blanco puro: fondo de tarjetas y elementos contrastantes |
+
+### Bordes y Sombras (Sistema de Elevación)
+
+| Variable CSS | Valor | Uso en el Sistema |
+|:---|:---|:---|
+| `--radius-sm` | `10px` | Esquinas para inputs, selectores y botones pequeños |
+| `--radius-md` | `16px` | Esquinas para envoltorios de tablas y tarjetas medianas |
+| `--radius-lg` | `22px` | Esquinas para contenedores principales y tarjetas de dashboard |
+| `--shadow-sm` | `0 1px 6px rgba(200,50,90,.08)` | Sombra leve por defecto para tarjetas |
+| `--shadow-md` | `0 4px 20px rgba(200,50,90,.12)` | Sombra en estados hover o foco |
+| `--shadow-lg` | `0 8px 40px rgba(200,50,90,.16)` | Sombra para ventanas emergentes o modales |

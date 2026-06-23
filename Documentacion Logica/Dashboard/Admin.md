@@ -1,41 +1,64 @@
 # Vista: Dashboard Administrador
 
 **Archivo:** `views/dashboard/admin.php`  
-**Ruta de acceso:** `?action=adminPanel`  
-**Rol requerido:** Administrador  
+**Acción:** `?action=adminPanel`  
+**Rol:** Administrador  
 **Controlador:** `AdminUsuarioController::dashboard()`
 
 ---
 
 ## ¿Qué hace esta vista?
 
-Es la pantalla principal del administrador. Muestra un resumen general del sistema con contadores en tiempo real y accesos rápidos a cada módulo.
+Es la pantalla principal del administrador. Presenta un resumen en tiempo real del estado del sistema con 4 contadores y accesos directos a cada módulo de gestión.
 
 ---
 
-## Secciones de la vista
+## Estructura visual
 
-### 1. Tarjetas de estadísticas
+```
+Panel de Administración 📊
 
-Cuatro tarjetas que muestran conteos directos de la base de datos:
+┌──────────────┐ ┌──────────────┐ ┌──────────────┐ ┌──────────────┐
+│ 👥 Clientes  │ │ 📅 Reservas  │ │ 💰 Pagos     │ │ 💅 Servicios │
+│    azul      │ │    rosado    │ │    verde     │ │    púrpura   │
+│     12       │ │     34       │ │     21       │ │      8       │
+└──────────────┘ └──────────────┘ └──────────────┘ └──────────────┘
 
-| Tarjeta | Consulta SQL |
-|---------|-------------|
-| Total clientes | `SELECT COUNT(*) FROM cliente` |
-| Total reservas | `SELECT COUNT(*) FROM reserva` |
-| Total pagos | `SELECT COUNT(*) FROM pago` |
-| Servicios | `SELECT COUNT(*) FROM servicio` |
+⚡ Accesos rápidos
 
-### 2. Accesos rápidos
+┌──────────────────┐ ┌──────────────────┐ ┌──────────────────┐ ┌──────────────────┐
+│ 📅 Ver Reservas  │ │ 👥 Ver Clientes  │ │ 💅 Ver Servicios │ │ 💰 Ver Pagos     │
+│ (rosado)        │ │ (azul)          │ │ (púrpura)       │ │ (verde)         │
+└──────────────────┘ └──────────────────┘ └──────────────────┘ └──────────────────┘
+```
 
-Botones de navegación directa a cada módulo:
+---
 
-| Botón | Redirige a |
-|-------|-----------|
-| 📅 Ver reservas | `?action=listarReservas` |
-| 👥 Ver clientes | `?action=listarClientes` |
-| 💅 Ver servicios | `?action=listarServicios` |
-| 💰 Ver pagos | `?action=verPagos` |
+## Tarjetas de estadísticas
+
+Cada tarjeta usa el sistema de `stat-card` con variante de color. Al pasar el cursor, se elevan con `transform: translateY(-3px)`.
+
+| Tarjeta | Variante CSS | Ícono | Consulta SQL |
+|---------|-------------|-------|-------------|
+| Clientes | `stat-blue` | 👥 | `SELECT COUNT(*) FROM cliente` |
+| Reservas | `stat-pink` | 📅 | `SELECT COUNT(*) FROM reserva` |
+| Pagos | `stat-green` | 💰 | `SELECT COUNT(*) FROM pago` |
+| Servicios | `stat-purple` | 💅 | `SELECT COUNT(*) FROM servicio` |
+
+Cada variante tiene una barra de 3px en la parte superior con el color correspondiente.
+
+---
+
+## Tarjetas de accesos rápidos
+
+Diseño de cuadrícula responsive. Cada tarjeta tiene su color temático y un efecto `hover` de elevación:
+
+| Módulo | Color | Redirige a |
+|--------|-------|-----------|
+| 📅 Ver Reservas | Rosado | `?action=listarReservas` |
+| 👥 Ver Clientes | Azul | `?action=listarClientes` |
+| 💅 Ver Servicios | Púrpura | `?action=listarServicios` |
+| 💰 Ver Pagos | Verde | `?action=verPagos` |
 
 ---
 
@@ -43,17 +66,24 @@ Botones de navegación directa a cada módulo:
 
 ```
 AdminUsuarioController::dashboard()
-    ├── SELECT COUNT(*) FROM cliente    → $totalClientes
-    ├── SELECT COUNT(*) FROM reserva    → $totalReservas
-    ├── SELECT COUNT(*) FROM pago       → $totalPagos
-    └── SELECT COUNT(*) FROM servicio   → $totalServicios
-            └── views/dashboard/admin.php
+        │
+        ├── SELECT COUNT(*) FROM cliente  → $totalClientes
+        ├── SELECT COUNT(*) FROM reserva  → $totalReservas
+        ├── SELECT COUNT(*) FROM pago     → $totalPagos
+        └── SELECT COUNT(*) FROM servicio → $totalServicios
+                │
+                └── views/dashboard/admin.php
 ```
 
 ---
 
 ## Acceso y seguridad
 
-- Solo accesible si `$_SESSION['rol'] === 'admin'`
-- Si un cliente intenta acceder, el método `validarAdmin()` retorna HTTP 403
-- Si no hay sesión activa, redirige a `?action=login`
+```
+Cualquier request al adminPanel:
+        │
+        └── AdminUsuarioController::__construct()
+                └── validarAdmin()
+                        ├── Si no hay sesión → Redirige a ?action=login
+                        └── Si rol ≠ 'admin' → HTTP 403 "Acceso denegado"
+```
